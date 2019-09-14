@@ -1,31 +1,88 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<configuration scan="true" scanPeriod="60 seconds" debug="false">
-    <!--    定义日志路径 -->
-    <property name="LOG_PATH" value="log"/>
-    <!--    控制台日志-->
+<!--
+    debug：要不要打印 logback内部日志信息，true则表示要打印。建议开启
+    scan： 配置发送改变时，要不要重新加载
+    scanPeriod：检测配置发生变化的时间间隔。如果没给出时间单位，默认时间单位是毫秒
+-->
+<configuration debug="true" scan="true" scanPeriod="60 seconds" >
+
+    <!--设置日志上下文名称，后面输出格式中可以通过定义 %contextName 来打印日志上下文名称-->
+    <contextName>logback</contextName>
+    <!--定义参数,后面可以通过${LOG_PATH}使用-->
+    <property name="LOG_PATH" value="D:/java/SpringBootLearn/001-spring-boot-log/log"/>
+    <!--定义日志文件名-->
+    <property name="APP_NAME" value="app"/>
+    <!--定义应用日志文件名-->
+    <property name="WEB_NAME" value="web"/>
+    <!--定义错误日志文件名-->
+    <property name="ERROR_NAME" value="error"/>
+    <!--定义定时任务日志文件名-->
+    <property name="SCHEDULE_NAME" value="schedule"/>
+    <!--配置规则类的位置-->
+    <conversionRule conversionWord="ip" converterClass="com.learn.log.config.IPLogConverter" />
+    <!--定义控制台打印格式-->
+    <property name="CONSOLE_LAYOUT" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%yellow%ip] [%green%thread] [%file : %line] :%highlight(%X{host}) %X{requestId} %msg%n"/>
+    <!--定义文件日志格式-->
+    <property name="FILE_LAYOUT" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %thread %file-%line %X{host} %X{requestId} %msg%n"/>
+    <!--定义日志文件存储天数-->
+    <property name="MAX_HISTORY" value="30"/>
+    <!--定义所有此类日志文件总大小-->
+    <property name="TOTAL_SIZE" value="200GB"/>
+    <!--定义单个日志文件总大小-->
+    <property name="MAX_SIZE" value="50MB"/>
+
+    <!--  配置控制台日志-->
     <appender name="consoleApp" class="ch.qos.logback.core.ConsoleAppender">
+        <!--定义了一个过滤器,在LEVEL之下的日志输出不会被打印出来-->
+        <!--这里定义了error，也就是控制台不会输出比error级别小的日志-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <!--
+        定义日志打印格式
+        %d{yyyy-MM-dd HH:mm:ss}：日期
+        %-5level：级别
+        %thread：当前进程
+        %file：在哪个类文件中
+        %line：第几行代码
+        %msg%n：日志信息
+        -->
         <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>
-                [%date{ISO8601}] [%-5level] - [%X{requestId}] - %msg%n
+                ${CONSOLE_LAYOUT}
             </pattern>
         </layout>
     </appender>
 
-    <appender name="INFO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/logback-test-info.log</file>
+    <!--定义日志滚动：日志按周期分文件存储-->
+    <!--定义应用日志文件-->
+    <appender name="appLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--定义日志文件名-->
+        <file>${LOG_PATH}/${APP_NAME}-${WEB_NAME}.log</file>
         <encoder>
             <pattern>
-                [%date{ISO8601}] [%-5level] - [%X{requestId}] - %msg%n
+                ${FILE_LAYOUT}
             </pattern>
         </encoder>
-        <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
+        <!--定义回滚策略-->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}logback-test-info.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-${WEB_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!--保留最长时间-->
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--该属性在 1.1.6版本后 才开始支持，文件总大小-->
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
+                <!--每个文件的大小-->
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
+        <!--
+        定义过滤器
+        level：定义接收什么级别的日志
+        onMatch：匹配规则就做接收处理
+        onMismatch：不匹配规则就做拒绝处理
+        -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
             <onMatch>ACCEPT</onMatch>
@@ -33,9 +90,66 @@
         </filter>
     </appender>
 
-    <root level="DEBUG">
-        <appender-ref ref="INFO_LOG"/>
-        <!--<appender-ref ref="consoleApp"/>-->
+    <!--定义错误日志文件-->
+    <appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-${ERROR_NAME}.log</file>
+        <encoder>
+            <pattern>
+                ${FILE_LAYOUT}
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-${ERROR_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--定义定时任务日志文件-->
+    <appender name="scheduleLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-${SCHEDULE_NAME}.log</file>
+        <encoder>
+            <pattern>
+                ${FILE_LAYOUT}
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-${SCHEDULE_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="consoleApp"/>
+        <appender-ref ref="appLog"/>
+        <appender-ref ref="errorLog"/>
     </root>
+
+    <!--对于类路径以 com.learn.log.schedule.ScheduleTest 开头的Logger,输出级别设置为warn,并且只输出到控制台-->
+    <!--这个logger没有指定appender，它会继承root节点中定义的那些appender-->
+    <!--<logger name="com.learn.log.schedule.ScheduleTest" level="debug"/>-->
+
+    <!--通过 LoggerFactory.getLogger("schedule") 可以获取到这个logger-->
+    <!--由于这个logger自动继承了root的appender，root中已经有schedule的appender了，自己这边又引入了schedule的appender-->
+    <!--如果没有设置 additivity="false" ,就会导致一条日志在控制台输出两次的情况-->
+    <!--additivity表示要不要使用rootLogger配置的appender进行输出-->
+    <logger name="com.learn.log.schedule" level="debug" additivity="false">
+        <appender-ref ref="scheduleLog"/>
+    </logger>
 
 </configuration>

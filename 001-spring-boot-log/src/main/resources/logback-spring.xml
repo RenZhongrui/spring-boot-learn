@@ -10,6 +10,8 @@
     <contextName>logback</contextName>
     <!--定义参数,后面可以通过${LOG_PATH}使用-->
     <property name="LOG_PATH" value="D:/java/SpringBootLearn/001-spring-boot-log/log"/>
+    <!--自定义颜色配置-->
+    <conversionRule conversionWord="color" converterClass="com.learn.log.config.ColorLogConverter"/>
     <!--定义日志文件名-->
     <property name="APP_NAME" value="app"/>
     <!--定义应用日志文件名-->
@@ -21,7 +23,7 @@
     <!--配置规则类的位置-->
     <conversionRule conversionWord="ip" converterClass="com.learn.log.config.IPLogConverter" />
     <!--定义控制台打印格式-->
-    <property name="CONSOLE_LAYOUT" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%yellow%ip] [%green%thread] [%file : %line] :%highlight(%X{host}) %X{requestId} %msg%n"/>
+    <property name="CONSOLE_LAYOUT" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%color(%-5level)] [%yellow%ip] [%green%thread] [%file : %line] :%highlight(%X{host}) %X{requestId} %msg%n"/>
     <!--定义文件日志格式-->
     <property name="FILE_LAYOUT" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %thread %file-%line %X{host} %X{requestId} %msg%n"/>
     <!--定义日志文件存储天数-->
@@ -130,28 +132,26 @@
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
+            <level>DEBUG</level>
         </filter>
     </appender>
 
     <root level="info">
         <appender-ref ref="consoleApp"/>
         <appender-ref ref="appLog"/>
-        <!--<appender-ref ref="errorLog"/>-->
+        <appender-ref ref="errorLog"/>
     </root>
 
-    <!--对于类路径以 com.learn.log.ScheduleTest 开头的Logger,输出级别设置为warn,并且只输出到控制台-->
+    <!--对于类路径以 com.learn.log.schedule.ScheduleTest 开头的Logger,输出级别设置为warn,并且只输出到控制台-->
     <!--这个logger没有指定appender，它会继承root节点中定义的那些appender-->
-    <logger name="com.learn.log.ScheduleTest" level="warn"/>
+    <!--<logger name="com.learn.log.schedule.ScheduleTest" level="debug"/>-->
 
-    <!--通过 LoggerFactory.getLogger("mytest") 可以获取到这个logger-->
-    <!--由于这个logger自动继承了root的appender，root中已经有stdout的appender了，自己这边又引入了stdout的appender-->
+    <!--通过 LoggerFactory.getLogger("schedule") 可以获取到这个logger-->
+    <!--由于这个logger自动继承了root的appender，root中已经有schedule的appender了，自己这边又引入了schedule的appender-->
     <!--如果没有设置 additivity="false" ,就会导致一条日志在控制台输出两次的情况-->
     <!--additivity表示要不要使用rootLogger配置的appender进行输出-->
-<!--    <logger name="schedule" level="info" additivity="false">
+    <logger name="com.learn.log.schedule" level="debug" additivity="false">
         <appender-ref ref="scheduleLog"/>
-    </logger>-->
+    </logger>
 
 </configuration>
