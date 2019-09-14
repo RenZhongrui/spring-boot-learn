@@ -1,16 +1,18 @@
 package com.learn.interceptor.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/interceptor")
 public class InterceptorController {
 
-    @GetMapping("/{id}")
+    @RequestMapping( value = "/{id}", method = RequestMethod.GET)
     public String test(@PathVariable Integer id) {
+        return "Hello Interceptor";
+    }
+
+    @RequestMapping( value = "", method = RequestMethod.POST)
+    public String getData(@PathVariable Integer id) {
         return "Hello Interceptor";
     }
 }
