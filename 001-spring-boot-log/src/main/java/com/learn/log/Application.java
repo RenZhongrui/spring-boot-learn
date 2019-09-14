@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
 @Slf4j
+@SpringBootApplication
 public class Application {
 
     public static void main(String[] args) {
@@ -18,6 +18,10 @@ public class Application {
         // 测试lombok中使用日志
         LombokTest lombokTest = new LombokTest();
         lombokTest.test();
+
+        // 测试定时任务日志
+        ScheduleTest scheduleTest = new ScheduleTest();
+        scheduleTest.test();
     }
 
 }

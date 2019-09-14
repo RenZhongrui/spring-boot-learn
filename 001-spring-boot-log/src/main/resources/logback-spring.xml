@@ -18,23 +18,38 @@
     <property name="ERROR_NAME" value="error"/>
     <!--定义定时任务日志文件名-->
     <property name="SCHEDULE_NAME" value="schedule"/>
+    <!--配置规则类的位置-->
+    <conversionRule conversionWord="ip" converterClass="com.learn.log.config.IPLogConverter" />
+    <!--定义控制台打印格式-->
+    <property name="CONSOLE_LAYOUT" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%yellow%ip] [%green%thread] [%file : %line] :%highlight(%X{host}) %X{requestId} %msg%n"/>
+    <!--定义文件日志格式-->
+    <property name="FILE_LAYOUT" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %thread %file-%line %X{host} %X{requestId} %msg%n"/>
+    <!--定义日志文件存储天数-->
+    <property name="MAX_HISTORY" value="30"/>
+    <!--定义所有此类日志文件总大小-->
+    <property name="TOTAL_SIZE" value="200GB"/>
+    <!--定义单个日志文件总大小-->
+    <property name="MAX_SIZE" value="50MB"/>
+
     <!--  配置控制台日志-->
     <appender name="consoleApp" class="ch.qos.logback.core.ConsoleAppender">
         <!--定义了一个过滤器,在LEVEL之下的日志输出不会被打印出来-->
         <!--这里定义了error，也就是控制台不会输出比error级别小的日志-->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>error</level>
+            <level>DEBUG</level>
         </filter>
         <!--
         定义日志打印格式
         %d{yyyy-MM-dd HH:mm:ss}：日期
         %-5level：级别
         %thread：当前进程
+        %file：在哪个类文件中
+        %line：第几行代码
         %msg%n：日志信息
         -->
         <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>
-                [%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%thread] :%msg%n
+                ${CONSOLE_LAYOUT}
             </pattern>
         </layout>
     </appender>
@@ -46,16 +61,20 @@
         <file>${LOG_PATH}/${APP_NAME}-${WEB_NAME}.log</file>
         <encoder>
             <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} %-5level %thread %msg%n
+                ${FILE_LAYOUT}
             </pattern>
         </encoder>
         <!--定义回滚策略-->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
             <fileNamePattern>${LOG_PATH}/${APP_NAME}-${WEB_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <!--保留最长时间-->
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--该属性在 1.1.6版本后 才开始支持，文件总大小-->
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
+                <!--每个文件的大小-->
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
         <!--
@@ -73,28 +92,20 @@
 
     <!--定义错误日志文件-->
     <appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!--定义日志文件名-->
         <file>${LOG_PATH}/${APP_NAME}-${ERROR_NAME}.log</file>
         <encoder>
             <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} %-5level %thread %msg%n
+                ${FILE_LAYOUT}
             </pattern>
         </encoder>
-        <!--定义回滚策略-->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
             <fileNamePattern>${LOG_PATH}/${APP_NAME}-${ERROR_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
-        <!--
-        定义过滤器
-        level：定义接收什么级别的日志
-        onMatch：匹配规则就做接收处理
-        onMismatch：不匹配规则就做拒绝处理
-        -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
@@ -104,28 +115,20 @@
 
     <!--定义定时任务日志文件-->
     <appender name="scheduleLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!--定义日志文件名-->
         <file>${LOG_PATH}/${APP_NAME}-${SCHEDULE_NAME}.log</file>
         <encoder>
             <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} %-5level %thread %msg%n
+                ${FILE_LAYOUT}
             </pattern>
         </encoder>
-        <!--定义回滚策略-->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
             <fileNamePattern>${LOG_PATH}/${APP_NAME}-${SCHEDULE_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
-        <!--
-        定义过滤器
-        level：定义接收什么级别的日志
-        onMatch：匹配规则就做接收处理
-        onMismatch：不匹配规则就做拒绝处理
-        -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
@@ -136,8 +139,19 @@
     <root level="info">
         <appender-ref ref="consoleApp"/>
         <appender-ref ref="appLog"/>
-        <appender-ref ref="errorLog"/>
-        <appender-ref ref="scheduleLog"/>
+        <!--<appender-ref ref="errorLog"/>-->
     </root>
+
+    <!--对于类路径以 com.learn.log.ScheduleTest 开头的Logger,输出级别设置为warn,并且只输出到控制台-->
+    <!--这个logger没有指定appender，它会继承root节点中定义的那些appender-->
+    <logger name="com.learn.log.ScheduleTest" level="warn"/>
+
+    <!--通过 LoggerFactory.getLogger("mytest") 可以获取到这个logger-->
+    <!--由于这个logger自动继承了root的appender，root中已经有stdout的appender了，自己这边又引入了stdout的appender-->
+    <!--如果没有设置 additivity="false" ,就会导致一条日志在控制台输出两次的情况-->
+    <!--additivity表示要不要使用rootLogger配置的appender进行输出-->
+<!--    <logger name="schedule" level="info" additivity="false">
+        <appender-ref ref="scheduleLog"/>
+    </logger>-->
 
 </configuration>

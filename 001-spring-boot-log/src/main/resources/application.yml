@@ -1,9 +1,9 @@
 logging:
-  level:
-    root: info
-    com.learn.log.LoggerTest: error #配置类路径下或包路径下日志级别
-    com.learn.log.LombokTest: info
-  file: D:/java/SpringBootLearn/001-spring-boot-log/log/logback.log
+#  level:
+#    root: info
+#    com.learn.log.LoggerTest: error #配置类路径下或包路径下日志级别
+#    com.learn.log.LombokTest: info
+#  file: D:/java/SpringBootLearn/001-spring-boot-log/log/logback.log
   config: src/main/resources/logback-spring.xml
 
 
