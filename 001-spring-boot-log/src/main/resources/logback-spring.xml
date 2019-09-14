@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    debug：要不要打印 logback内部日志信息，true则表示要打印。建议开启
+    scan： 配置发送改变时，要不要重新加载
+    scanPeriod：检测配置发生变化的时间间隔。如果没给出时间单位，默认时间单位是毫秒
+-->
+<configuration debug="true" scan="true" scanPeriod="60 seconds" >
+
+    <!--设置日志上下文名称，后面输出格式中可以通过定义 %contextName 来打印日志上下文名称-->
+    <contextName>logback</contextName>
+    <!--定义参数,后面可以通过${LOG_PATH}使用-->
+    <property name="LOG_PATH" value="D:/java/SpringBootLearn/001-spring-boot-log/log"/>
+    <!--定义日志文件名-->
+    <property name="APP_NAME" value="app"/>
+    <!--定义应用日志文件名-->
+    <property name="WEB_NAME" value="web"/>
+    <!--定义错误日志文件名-->
+    <property name="ERROR_NAME" value="error"/>
+    <!--定义定时任务日志文件名-->
+    <property name="SCHEDULE_NAME" value="schedule"/>
+    <!--  配置控制台日志-->
+    <appender name="consoleApp" class="ch.qos.logback.core.ConsoleAppender">
+        <!--定义了一个过滤器,在LEVEL之下的日志输出不会被打印出来-->
+        <!--这里定义了error，也就是控制台不会输出比error级别小的日志-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>error</level>
+        </filter>
+        <!--
+        定义日志打印格式
+        %d{yyyy-MM-dd HH:mm:ss}：日期
+        %-5level：级别
+        %thread：当前进程
+        %msg%n：日志信息
+        -->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                [%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%thread] :%msg%n
+            </pattern>
+        </layout>
+    </appender>
+
+    <!--定义日志滚动：日志按周期分文件存储-->
+    <!--定义应用日志文件-->
+    <appender name="appLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--定义日志文件名-->
+        <file>${LOG_PATH}/${APP_NAME}-${WEB_NAME}.log</file>
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} %-5level %thread %msg%n
+            </pattern>
+        </encoder>
+        <!--定义回滚策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-${WEB_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!--
+        定义过滤器
+        level：定义接收什么级别的日志
+        onMatch：匹配规则就做接收处理
+        onMismatch：不匹配规则就做拒绝处理
+        -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--定义错误日志文件-->
+    <appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--定义日志文件名-->
+        <file>${LOG_PATH}/${APP_NAME}-${ERROR_NAME}.log</file>
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} %-5level %thread %msg%n
+            </pattern>
+        </encoder>
+        <!--定义回滚策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-${ERROR_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!--
+        定义过滤器
+        level：定义接收什么级别的日志
+        onMatch：匹配规则就做接收处理
+        onMismatch：不匹配规则就做拒绝处理
+        -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--定义定时任务日志文件-->
+    <appender name="scheduleLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--定义日志文件名-->
+        <file>${LOG_PATH}/${APP_NAME}-${SCHEDULE_NAME}.log</file>
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} %-5level %thread %msg%n
+            </pattern>
+        </encoder>
+        <!--定义回滚策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-${SCHEDULE_NAME}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!--
+        定义过滤器
+        level：定义接收什么级别的日志
+        onMatch：匹配规则就做接收处理
+        onMismatch：不匹配规则就做拒绝处理
+        -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="consoleApp"/>
+        <appender-ref ref="appLog"/>
+        <appender-ref ref="errorLog"/>
+        <appender-ref ref="scheduleLog"/>
+    </root>
+
+</configuration>

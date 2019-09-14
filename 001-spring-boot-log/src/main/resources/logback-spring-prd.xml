@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!--    定义日志路径 -->
+    <property name="LOG_PATH" value="log"/>
+    <!--    控制台日志-->
+    <appender name="consoleApp" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                [%date{ISO8601}] [%-5level] - [%X{requestId}] - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+
+    <appender name="INFO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/logback-test-info.log</file>
+        <encoder>
+            <pattern>
+                [%date{ISO8601}] [%-5level] - [%X{requestId}] - %msg%n
+            </pattern>
+        </encoder>
+        <!--根据时间+文件大小滚动日志文件时间：精确到天，最大记录天数30天文件：文件大小控制在50MB -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}logback-test-info.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="INFO_LOG"/>
+        <!--<appender-ref ref="consoleApp"/>-->
+    </root>
+
+</configuration>
