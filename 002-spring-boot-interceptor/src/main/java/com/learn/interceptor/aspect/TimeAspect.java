@@ -55,7 +55,7 @@ public class TimeAspect {
             System.out.println(" controller type:" + type[i]); // /interceptor
         }
 
-        // 获取每个controller的method类型的集合GET、POST、PUT、DELETE
+        // 获取请求的method类型
         MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
         Method declaredMethod = targetClass.getDeclaredMethod(methodSignature.getName(), methodSignature.getParameterTypes());
         RequestMapping mapping = declaredMethod.getAnnotation(RequestMapping.class);
