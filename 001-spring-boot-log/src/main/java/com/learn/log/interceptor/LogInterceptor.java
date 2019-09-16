@@ -16,13 +16,13 @@ import java.util.UUID;
 @Component
 public class LogInterceptor implements HandlerInterceptor {
 
-    private static final String REMOTER_ID= "requestId";
+    private static final String REMOTER_ID = "requestId";
     private static final String REMOTER_HOST = "host";
     private static final String REMOTER_ADDR = "remoter_addr";
     private static final String REMOTER_QUERY = "remoter_query";
     private static final String REMOTER_METHOD = "remoter_method";
-    private static final String REMOTER_URL= "remoter_url";
-    private static final String REMOTER_AGENT= "remoter_url";
+    private static final String REMOTER_URL = "remoter_url";
+    private static final String REMOTER_AGENT = "remoter_url";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

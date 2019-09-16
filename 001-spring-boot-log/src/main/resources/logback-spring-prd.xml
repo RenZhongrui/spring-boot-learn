@@ -4,7 +4,7 @@
     scan： 配置发送改变时，要不要重新加载
     scanPeriod：检测配置发生变化的时间间隔。如果没给出时间单位，默认时间单位是毫秒
 -->
-<configuration debug="true" scan="true" scanPeriod="60 seconds" >
+<configuration debug="true" scan="true" scanPeriod="60 seconds">
 
     <!--设置日志上下文名称，后面输出格式中可以通过定义 %contextName 来打印日志上下文名称-->
     <contextName>logback</contextName>
@@ -21,11 +21,13 @@
     <!--定义定时任务日志文件名-->
     <property name="SCHEDULE_NAME" value="schedule"/>
     <!--配置规则类的位置-->
-    <conversionRule conversionWord="ip" converterClass="com.learn.log.config.IPLogConverter" />
+    <conversionRule conversionWord="ip" converterClass="com.learn.log.config.IPLogConverter"/>
     <!--定义控制台打印格式-->
-    <property name="CONSOLE_LAYOUT" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%color(%-5level)] [%yellow(%ip)] [%green(%thread)] [%file : %line] :%X{host} %X{requestId} %msg%n"/>
+    <property name="CONSOLE_LAYOUT"
+              value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%color(%-5level)] [%yellow(%ip)] [%green(%thread)] [%file : %line] :%X{host} %X{requestId} %msg%n"/>
     <!--定义文件日志格式-->
-    <property name="FILE_LAYOUT" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %thread %file-%line %X{host} %X{requestId} %msg%n"/>
+    <property name="FILE_LAYOUT"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %thread %file-%line %X{host} %X{requestId} %msg%n"/>
     <!--定义日志文件存储天数-->
     <property name="MAX_HISTORY" value="30"/>
     <!--定义所有此类日志文件总大小-->

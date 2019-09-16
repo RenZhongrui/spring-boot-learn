@@ -3,11 +3,11 @@ spring:
     active: prd
 
 logging:
-#  level:
-#    root: info
-#    com.learn.log.LoggerTest: error #ÅäÖÃÀàÂ·¾¶ÏÂ»ò°üÂ·¾¶ÏÂÈÕÖ¾¼¶±ð
-#    com.learn.log.LombokTest: info
-#  file: D:/java/SpringBootLearn/001-spring-boot-log/log/logback.log
+  #  level:
+  #    root: info
+  #    com.learn.log.LoggerTest: error #ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½Â»ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½
+  #    com.learn.log.LombokTest: info
+  #  file: D:/java/SpringBootLearn/001-spring-boot-log/log/logback.log
   #config: src/main/resources/logback-spring-${spring.profiles.active}.xml
   config: src/main/resources/logback-spring.xml
 

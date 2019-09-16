@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/interceptor")
 public class InterceptorController {
 
-    @RequestMapping( value = "/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String test(@PathVariable Integer id) {
         return "Hello Interceptor";
     }
 
-    @RequestMapping( value = "", method = RequestMethod.POST)
+    @RequestMapping(value = "", method = RequestMethod.POST)
     public String getData(@PathVariable Integer id) {
         return "Hello Interceptor";
     }

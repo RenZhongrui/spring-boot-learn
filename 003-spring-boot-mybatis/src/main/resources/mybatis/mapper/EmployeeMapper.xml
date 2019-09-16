@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learn.mybatis.mapper.EmployeeMapper">
+    <!--
+        配置二级缓存
+            eviction:缓存的回收策略
+            flushInterval:缓存的回收间隔，默认不清空，可以设置数值，单位是毫秒
+            readOnly：缓存是否只读，true为只读，Mybatis认为从缓存中取值都是只读操作，
+                      为了加快速度，直接会将缓冲中数据的引用交给用户，不安全，速度快
+                      false，非只读，Mybatis觉得缓存中的数据可能被修改，
+                      所以会利用反序列化技术克隆一份新的数据给用户，安全，速度慢
+                      默认为false
+            size:缓冲大小
+    -->
+    <cache eviction="FIFO" flushInterval="30000" readOnly="false" size="1024"></cache>
+
+    <select id="findOneById" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee where id = #{id}
+    </select>
+
+    <!--    <insert id="addOne">
+            insert into employee(lastName,email,gender,d_id) values (#{lastName},#{email},#{gender},#{dId)})
+        </insert>-->
+
+    <!--
+        描述：内联查询，使用级联属性查询
+        SQL语句：SELECT * FROM employee e INNER JOIN department d ON e.d_id = d.id WHERE e.id = 1;
+    -->
+    <resultMap id="findEmpAndDeptResult" type="com.learn.mybatis.entity.Employee">
+        <id column="id" property="id"/>
+        <result column="lastName" property="lastName"/>
+        <result column="email" property="email"/>
+        <result column="gender" property="gender"/>
+        <result column="d_id" property="dept.id"/>
+        <result column="departmentName" property="dept.departmentName"/>
+    </resultMap>
+    <select id="findEmpAndDept" resultMap="findEmpAndDeptResult">
+        SELECT e.id, e.lastName,e.email,e.gender,e.d_id,d.id,d.departmentName
+        FROM employee e INNER JOIN department d ON e.d_id = d.id WHERE e.id = #{id};
+    </select>
+
+    <!--
+      描述：内联查询，使用association查询,可以指定联合的javaBean对象
+    -->
+    <resultMap id="findEmpAndDeptResultByAssociation" type="com.learn.mybatis.entity.Employee">
+        <id column="id" property="id"/>
+        <result column="lastName" property="lastName"/>
+        <result column="email" property="email"/>
+        <result column="gender" property="gender"/>
+        <!--
+            id：指定主键列的封装规则
+            property：指定哪个属性是联合的对象
+            javaType：指定这个属性对象的类型
+            column：对应数据库字段，property对应java bean属性
+        -->
+        <association property="dept" javaType="com.learn.mybatis.entity.Department">
+            <id column="d_id" property="id"/>
+            <result column="departmentName" property="departmentName"/>
+        </association>
+    </resultMap>
+    <select id="findEmpAndDeptByAssociation" resultMap="findEmpAndDeptResultByAssociation">
+        SELECT e.id, e.lastName,e.email,e.gender,e.d_id,d.id,d.departmentName
+        FROM employee e INNER JOIN department d ON e.d_id = d.id WHERE e.id = #{id};
+    </select>
+
+    <!--
+    使用association进行分步查询(子查询)
+    1.先从employee表中查出d_id
+    2.再根据d_id查询出部门信息
+    3.再将部门信息设置到员工中
+    SELECT * FROM department WHERE id = (SELECT d_id FROM employee WHERE id =1);
+    -->
+    <resultMap id="findEmpByIdStepResult" type="com.learn.mybatis.entity.Employee">
+        <id column="id" property="id"/>
+        <result column="lastName" property="lastName"/>
+        <result column="email" property="email"/>
+        <result column="gender" property="gender"/>
+        <!--
+            select: 表示property="dept"这个属性的值是从select中查出来的
+            column: 指定将哪一列的值传给select指定的方法的入参
+        -->
+        <association property="dept"
+                     select="com.learn.mybatis.mapper.DepartmentMapper.findOneById"
+                     column="d_id">
+        </association>
+    </resultMap>
+    <select id="findEmpByIdStep" resultMap="findEmpByIdStepResult">
+        select * from employee where id=#{id}
+    </select>
+
+    <!--
+        使用association进行延迟查询
+        现状：每次查询employee信息的时候都会将部门信息进行查询，浪费资源
+        解决：当需要部门信息的时候才会去查询部门信息
+        方法：在分步查询的方法中添加两个配置
+           <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>
+    -->
+    <select id="findEmployeeForMap" resultType="map">
+        select * from employee where id = #{id}
+    </select>
+
+    <select id="findEmployeeByList" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee where lastName like #{lastName};
+    </select>
+
+    <select id="findEmployeeByListMap" resultType="com.learn.mybatis.entity.Employee">
+        select e.*, d.* from employee e inner join department d on e.d_id = d.id where lastName like #{lastName};
+    </select>
+
+    <!--
+        如果第一个if条件不满足，则sql中会出现错误：select * from employee where and lastName like '';
+        第一种解决方法：
+            select * from employee
+            where 1=1
+            <if test="id!=null">
+                and id = #{id}
+            </if>
+        第二种方法：使用where标签
+            select * from employee
+            <where>
+                <if test="id!=null">
+                    id = #{id}
+                </if>
+                 <if test="lastName!=null and lastName!=''">
+                    and lastName like #{lastName}
+                </if>
+            </where>
+            缺点：不能在后面写and
+              <where>
+                <if test="id!=null">
+                    id = #{id} and 如果下面的不满足，则会多一个and
+                </if>
+                 <if test="lastName!=null and lastName!=''">
+                    lastName like #{lastName}
+                </if>
+            </where>
+    -->
+    <select id="getEmployeeIf" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee
+        where
+        <!--
+        test（OGNL）: 表示判断表达式是否成立
+        表达式规则：有特殊字符要进行转义
+        -->
+        <if test="id!=null">
+            id = #{id}
+        </if>
+        <if test="lastName!=null and lastName!=''">
+            and lastName like #{lastName}
+        </if>
+        <if test="email != null &amp;&amp; email != &quot;&quot; and email.trim() != &quot;&quot;">
+            and email = #{email}
+        </if>
+        <if test="gender == 0 or gender == 1">
+            and gender = #{gender}
+        </if>
+    </select>
+
+    <!--
+        使用where标签
+        能去掉前面多余的and
+    -->
+    <select id="getEmployeeWhere" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee
+        <where>
+            <if test="id!=null">
+                id = #{id}
+            </if>
+            <if test="lastName!=null and lastName!=''">
+                and lastName like #{lastName}
+            </if>
+        </where>
+    </select>
+
+    <!--
+        使用trim标签:能解决where标签去不掉and和or的问题
+        trim作用：是标签内整个字符串拼串的结果
+        prefix:前缀，能给最后拼好的SQL字符串加一个前缀
+        prefixOverrides:前缀覆盖，能去除整个字符串前面多余的字符串
+        suffix:后缀，能给最后拼好的SQL串添加一个后缀
+        suffixOverrides:后缀覆盖，能去除整个字符串后面多余的字符串
+    -->
+    <select id="getEmployeeTrim" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee
+        <trim prefix="where" suffixOverrides="and">
+            <if test="id!=null">
+                id = #{id}
+            </if>
+            <if test="lastName!=null and lastName!=''">
+                and lastName like #{lastName} and
+            </if>
+        </trim>
+    </select>
+
+    <!--
+        使用choose标签等价于switch-case
+        如果满足第一个条件，后面的就不执行
+    -->
+    <select id="getEmployeeChoose" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee
+        <where>
+            <choose>
+                <when test="id != null">
+                    id = #{id}
+                </when>
+                <when test="lastName != null">
+                    lastName = #{lastName}
+                </when>
+                <otherwise>
+                    email = #{email}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!--set标签 可以去除多余的逗号（，）-->
+    <select id="updateEmployeeSet" resultType="com.learn.mybatis.entity.Employee">
+        update employee
+        <set>
+            <if test="lastName != null">
+                lastName = #{lastName},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="gender != null">
+                gender = #{gender}
+            </if>
+        </set>
+        where id = #{id}
+    </select>
+
+    <!--
+        使用foreach遍历
+         collection：指定传过来的集合
+         open：遍历结果以什么开始
+         close：遍历结果以什么结束
+         item：遍历的每个元素
+         separator：遍历出的元素用什么分隔
+         index：每个元素的索引，如果是map，则index为key，value为item，index="i" 取值：#{i}
+    -->
+    <select id="getEmployeeForeach" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee where id in
+        <foreach collection="ids" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--
+        mysql数据库批量插入员工
+        sql:insert into employee(lastName, email,gender,d_id) values("李四", "aaa","0",2),("老五", "ddd","0",3);
+        第一种语法是：values("李四", "aaa","0",2),("老五", "ddd","0",3);
+        推荐使用第一种
+    -->
+    <insert id="addEmployees">
+        insert into employee(
+        <include refid="insertColumn"></include>
+        )
+        values
+        <foreach collection="employees" separator="," item="employee">
+            (#{employee.lastName},#{employee.email},#{employee.gender},#{employee.dept.id})
+        </foreach>
+    </insert>
+    <!--
+      第二种语法是：执行多条sql，但是要开启Mysql配置：allowMultiQueries=true
+    -->
+    <!--    <insert id="addEmployees">
+            <foreach collection="employees" item="employee" separator=";">
+                insert into employee(lastName, email,gender,d_id)
+                values(#{employee.lastName},#{employee.email},#{employee.gender},#{employee.dept.id})
+            </foreach>
+        </insert>-->
+
+    <!--
+    oracle数据库批量插入
+    oracle不支持values(),()方式
+    oracle支持的方式：
+    1、将多条insert语句放在begin end里
+    2、利用中间表
+    -->
+    <!--    <insert id="addEmployees">
+            <foreach collection="employees" item="employee" open="begin" close="end;">
+                insert into employee(lastName, email,gender,d_id)
+                values(employee_sql.nextval,#{employee.lastName},#{employee.email},#{employee.gender},#{employee.dept.id});
+            </foreach>
+        </insert>-->
+
+    <!--
+    两个内置参数：不只是方法传过来的值可以进行判断，取值
+    Mybatis默认两个内置参数：
+    _parameter：代表整个参数
+        单个参数；_parameter就是这个参数
+        多个参数：会被封装为一个map，_parameter就是这个map
+    _databaseId：
+        如果配置了databaseIdProvider标签
+        _databaseId就代表当前数据库的别名
+    -->
+    <select id="getEmployeeByIdInnerParameter" resultType="com.learn.mybatis.entity.Employee">
+        <!--  <if test="_databaseId == 'mysql'">
+              select * from employee
+          </if>-->
+        select * from employee
+        <!--
+        _parameter表示的是传过来的参数，也可以这样写
+        id = #{_parameter.id}
+        -->
+        <if test="_parameter != null">
+            <where>
+                id = #{id}
+            </where>
+        </if>
+
+    </select>
+
+    <!--
+        bing可以将OGNL表达式的值绑定到一个变量中，方便后来引用这个变量的值
+    -->
+    <select id="findAndCountBind" resultType="com.learn.mybatis.entity.Employee">
+        <bind name="_lastName" value="'_'+lastName+'%'"/>
+        select * from employee
+        where
+        lastName like #{_lastName}
+    </select>
+
+    <!--
+        sql抽取可重用的sql片段
+        引用方式：<include refid="insertColumn"></include>
+        sql:抽取经常查询和插入的字段，方便复用
+    -->
+    <sql id="insertColumn">
+        <!--   <if test="">
+
+           </if>-->
+        lastName, email,gender,d_id
+    </sql>
+
+    <!--
+    一级缓存（本地缓存）：SqlSession级别的缓存，一级缓存是一直开启的，SqlSession级别的缓存是存在Map中的
+    生效情况：在同一次SqlSession中，会调用一级缓存，发起一次SQL执行
+    不生效情况：
+              1、不同的SqlSession
+              2、SqlSession相同，但是查询条件不同
+              3、SqlSession相同，查询条件相同，但是两次查询期间执行了增删改操作(增删改可能对当前数据有影响)
+              4、SqlSession相同，但是手动清除了一级缓存 openSession.clearCache()
+
+      二级缓存（全局缓存）：
+            基于namespace级别的缓存，一个namespace对应一个二级缓存，
+       工作机制：
+            1、一个会话，查询一条数据，这个数据就会被放在当前会话的一级缓存中，
+            2、如果会话关闭，一级缓存中的数据会被保存到二级缓存中，新的会话查询信息就会参照二级缓存中的数据
+            3、如果SqlSession通过mapper既查Employee又查Department，那么缓存会分别存在各自的map对象中
+            不同namespace查出的数据会放在自己对应的缓存中（map）
+       使用配置：
+            1、开启缓存配置
+                <setting name="cacheEnabled" value="true"/>
+            2、在mapper.xml中配置使用二级缓存
+                <cache></cache>
+            3、pojo（实体类）需要实现序列化接口，
+        注意：查出的数据都会默认先存在一级缓存中，只有会话关闭之后才会存在二级缓存中
+
+        相关配置：
+            1、cacheEnabled：true开启二级缓冲，false关闭二级缓冲，一级缓存不关闭
+            2、每一个select标签都有useCache = "true"
+               true的时候会从二级缓存取数据
+               false的时候还是一级缓存,不受影响
+            3、flushCache="true"，
+               每个增删改都默认为true，增删改执行完成后就清除一级缓存和二级缓存
+               查询标签里默认为false，不清除缓存，如果设置为true，则每次查询过后，就会清除缓存，缓存就不会被使用
+            4、sqlSession.clearCache():只能清除当前session的一级缓存
+            5、localCacheScope：本地缓存作用域（一级缓存），设置为SESSION时当前会话的一级缓存保存在当前会话缓存中，
+                STATEMENT可以禁用一级缓存
+
+          注：会话开始的时候先读取二级缓存，再读取一级缓存
+    -->
+    <select id="findAllByPage" resultType="com.learn.mybatis.entity.Employee">
+        select * from employee
+    </select>
+
+
+</mapper>
+

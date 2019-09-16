@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 public class LogTest {
 
     private Logger logger = LoggerFactory.getLogger(LogTest.class);
+
     @Test
     public void test() {
         logger.debug("debug日志");
