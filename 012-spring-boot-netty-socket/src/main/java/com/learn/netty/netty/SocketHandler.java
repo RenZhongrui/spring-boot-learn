@@ -6,16 +6,32 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
+import java.util.List;
 
 /***
  * 服务端自定义业务处理handler
  */
 @Slf4j
 public class SocketHandler extends ChannelInboundHandlerAdapter {
+
+
+/*    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent event = (IdleStateEvent) evt;
+            if (event.state() == IdleState.ALL_IDLE) {
+                ctx.channel().writeAndFlush("Heartbeat" + System.getProperty("line.separator"));
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }*/
 
     /**
      * 对每一个传入的消息都要调用；
@@ -33,12 +49,15 @@ public class SocketHandler extends ChannelInboundHandlerAdapter {
         log.error(String.valueOf(socketAddress));
         // 构建响应数据
         ByteBuf in = (ByteBuf) msg;
+        int length = in.readableBytes();
+        log.error("消息长度" + length);
         String res = in.toString(CharsetUtil.UTF_8);
+        System.out.println("received length: " + res.length()); // 10是正常的
         System.out.println("server received: " + res);
         // 返回response数据，先写到缓冲区然后刷新到客户端
         ctx.write(in);
-    }
 
+    }
 
     /**
      * 通知ChannelInboundHandler最后一次对channelRead()的调用时当前批量读取中的的最后一条消息。
