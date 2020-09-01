@@ -1,0 +1,4 @@
+hadoop:
+  user: hadoop
+  uri: hdfs://www.rui.hadoop.com:8020
+  apiDir: /hdfs-api
