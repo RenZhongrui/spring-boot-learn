@@ -34,7 +34,6 @@ public class HDFSService {
         Configuration configuration = new Configuration();
         configuration.set("dfs.client.use.datanode.hostname", "true");
         configuration.set("dfs.replication", "1");
-        //configuration.set("dfs.datanode.address","www.rui.hadoop.com:50010");
         return configuration;
     }
 
@@ -106,6 +105,14 @@ public class HDFSService {
             inputStream.close();
             fs.close();
         }
+    }
+
+    public boolean delete(String filePath,boolean recursive) throws Exception {
+        FileSystem fs = getFileSystem();
+        System.out.println("delete:"+filePath);
+        Path path = new Path(filePath);
+        boolean result = fs.delete(path, true);
+        return result;
     }
 
 }

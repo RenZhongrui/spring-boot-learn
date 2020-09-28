@@ -31,4 +31,14 @@ public class HadoopController {
         System.out.println("read:::" + data);
         return LogResponse.success("读取成功");
     }
+
+    @DeleteMapping("/delete")
+    public LogResponse<String> delete(@RequestParam("filePath") String filePath, boolean recursive) throws Exception {
+        boolean result = hdfsService.delete(filePath, recursive);
+        if (result) {
+            return LogResponse.success("删除成功");
+        } else {
+            return LogResponse.success("删除失败");
+        }
+    }
 }
